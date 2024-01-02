@@ -115,7 +115,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     switch (paymentIntent.status) {
       // created' | 'authorized' | 'captured' | 'refunded' | 'failed'
       case "created":
-        return PaymentSessionStatus.AUTHORIZED;
+        return PaymentSessionStatus.REQUIRES_MORE;
 
       case "paid":
         return PaymentSessionStatus.AUTHORIZED;
@@ -243,7 +243,17 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   ): Promise<
     PaymentProcessorError | PaymentProcessorSessionResponse["session_data"]
   > {
-    console.log("=>>>>>>>>>>calling cancel payment");
+    console.log("=>>>>>>>>>>calling cancel payment", paymentSessionData);
+    const id = paymentSessionData.id as string;
+    let razorpayData = await this.razorpay_.orders.fetch(id);
+    if (razorpayData.status == "attempted" || razorpayData.status == "paid") {
+      const error: PaymentProcessorError = {
+        error: "Unable to cancel as razorpay doesn't support cancellation",
+        code: ErrorCodes.UNSUPPORTED_OPERATION,
+      };
+      return error;
+    }
+
     return paymentSessionData;
   }
 
