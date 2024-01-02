@@ -112,7 +112,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     switch (paymentIntent.status) {
       // created' | 'authorized' | 'captured' | 'refunded' | 'failed'
       case "created":
-        return PaymentSessionStatus.REQUIRES_MORE;
+        return PaymentSessionStatus.AUTHORIZED;
 
       case "paid":
         return PaymentSessionStatus.AUTHORIZED;
