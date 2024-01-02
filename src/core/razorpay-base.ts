@@ -374,11 +374,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     let razorpayData = await this.razorpay_.orders.fetch(id);
     if (razorpayData) {
       if (razorpayData.status == "attempted" || razorpayData.status == "paid") {
-        const error: PaymentProcessorError = {
-          error: "Unable to update paid or attempted order",
-          code: ErrorCodes.UNSUPPORTED_OPERATION,
-        };
-        return error;
+        return;
       }
     }
 
