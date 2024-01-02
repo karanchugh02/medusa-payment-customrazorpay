@@ -137,6 +137,12 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
       billing_address,
     } = context;
 
+    console.log(
+      "billing address is ",
+      billing_address,
+      " and customer is ",
+      customer
+    );
     const intentRequest: Orders.RazorpayOrderCreateRequestBody = {
       amount: Math.round(amount),
       currency: currency_code.toUpperCase(),
@@ -152,19 +158,19 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
       ...intentRequestData,
     };
 
-    if (
-      !(
-        customer?.billing_address?.phone ||
-        customer?.phone ||
-        billing_address?.phone
-      )
-    ) {
-      throw new MedusaError(
-        MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
-        "Phone number not found in context",
-        MedusaError.Codes.CART_INCOMPATIBLE_STATE
-      );
-    }
+    // if (
+    //   !(
+    //     customer?.billing_address?.phone ||
+    //     customer?.phone ||
+    //     billing_address?.phone
+    //   )
+    // ) {
+    //   throw new MedusaError(
+    //     MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
+    //     "Phone number not found in context",
+    //     MedusaError.Codes.CART_INCOMPATIBLE_STATE
+    //   );
+    // }
 
     if (customer?.metadata?.razorpay_id) {
       intentRequest.notes!.razorpay_id = customer.metadata
