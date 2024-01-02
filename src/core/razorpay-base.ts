@@ -246,12 +246,14 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     console.log("=>>>>>>>>>>calling cancel payment", paymentSessionData);
     const id = paymentSessionData.id as string;
     let razorpayData = await this.razorpay_.orders.fetch(id);
-    if (razorpayData.status == "attempted" || razorpayData.status == "paid") {
-      const error: PaymentProcessorError = {
-        error: "Unable to cancel as razorpay doesn't support cancellation",
-        code: ErrorCodes.UNSUPPORTED_OPERATION,
-      };
-      return error;
+    if (razorpayData) {
+      if (razorpayData.status == "attempted" || razorpayData.status == "paid") {
+        const error: PaymentProcessorError = {
+          error: "Unable to cancel as razorpay doesn't support cancellation",
+          code: ErrorCodes.UNSUPPORTED_OPERATION,
+        };
+        return error;
+      }
     }
 
     return paymentSessionData;
