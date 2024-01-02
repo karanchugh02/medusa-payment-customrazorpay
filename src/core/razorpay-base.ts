@@ -49,6 +49,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   abstract get paymentIntentOptions(): PaymentIntentOptions;
 
   getPaymentIntentOptions(): PaymentIntentOptions {
+    console.log("=>>>>>>>>>>called payment intent options");
     const options: PaymentIntentOptions = {};
 
     if (this?.paymentIntentOptions?.capture_method) {
@@ -72,6 +73,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     razorpay_order_id: string,
     razorpay_signature: string
   ): boolean {
+    console.log("=>>>>>>>>>>called validate signature");
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", this.options_.key_secret as string)
@@ -83,6 +85,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   async getRazorpayPaymentStatus(
     paymentIntent: Orders.RazorpayOrder
   ): Promise<PaymentSessionStatus> {
+    console.log("=>>>>>>>>>>calling get razorpay status");
     if (!paymentIntent) {
       return PaymentSessionStatus.ERROR;
     }
@@ -105,10 +108,10 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   async getPaymentStatus(
     paymentSessionData: Record<string, unknown>
   ): Promise<PaymentSessionStatus> {
+    console.log("=>>>>>>>>>>calling get payment status");
     const id = paymentSessionData.id as string;
     const paymentIntent = await this.razorpay_.orders.fetch(id);
 
-    console.log("payment intent razorpay is ", paymentIntent);
     switch (paymentIntent.status) {
       // created' | 'authorized' | 'captured' | 'refunded' | 'failed'
       case "created":
@@ -128,6 +131,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   async initiatePayment(
     context: PaymentProcessorContext
   ): Promise<PaymentProcessorError | PaymentProcessorSessionResponse> {
+    console.log("=>>>>>>>>>>calling initiate payment");
     const intentRequestData = this.getPaymentIntentOptions();
     const {
       email,
@@ -137,13 +141,6 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
       customer,
       billing_address,
     } = context;
-
-    console.log(
-      "billing address is ",
-      billing_address,
-      " and customer is ",
-      customer
-    );
 
     const intentRequest: Orders.RazorpayOrderCreateRequestBody = {
       amount: Math.round(amount),
@@ -236,6 +233,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
         data: PaymentProcessorSessionResponse["session_data"];
       }
   > {
+    console.log("=>>>>>>>>>>calling authorize payment");
     const status = await this.getPaymentStatus(paymentSessionData);
     return { data: paymentSessionData, status };
   }
@@ -245,6 +243,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   ): Promise<
     PaymentProcessorError | PaymentProcessorSessionResponse["session_data"]
   > {
+    console.log("=>>>>>>>>>>calling cancel payment");
     return paymentSessionData;
   }
 
@@ -253,6 +252,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   ): Promise<
     PaymentProcessorError | PaymentProcessorSessionResponse["session_data"]
   > {
+    console.log("=>>>>>>>>>>calling capture payment");
     const order_id = (paymentSessionData as unknown as Orders.RazorpayOrder).id;
     const paymentsResponse = await this.razorpay_.orders.fetchPayments(
       order_id
@@ -286,6 +286,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   ): Promise<
     PaymentProcessorError | PaymentProcessorSessionResponse["session_data"]
   > {
+    console.log("=>>>>>>>>>>calling delete payment");
     return await this.cancelPayment(paymentSessionData);
   }
 
@@ -339,6 +340,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     PaymentProcessorError | PaymentProcessorSessionResponse["session_data"]
   > {
     try {
+      console.log("=>>>>>>>>>>calling retrieve payment");
       const id = (paymentSessionData as unknown as Orders.RazorpayOrder)
         .id as string;
       const intent = await this.razorpay_.orders.fetch(id);
@@ -351,6 +353,8 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   async updatePayment(
     context: PaymentProcessorContext
   ): Promise<PaymentProcessorError | PaymentProcessorSessionResponse | void> {
+    console.log("=>>>>>>>>>>calling update payment");
+
     const { amount, customer, paymentSessionData, currency_code } = context;
     const razorpayId = customer?.metadata?.razorpay_id;
 
@@ -407,6 +411,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     PaymentProcessorSessionResponse["session_data"] | PaymentProcessorError
   > {
     try {
+      console.log("=>>>>>>>>>>update payment data");
       // Prevent from updating the amount from here as it should go through
       // the updatePayment method to perform the correct logic
       if (data.amount || data.currency) {
