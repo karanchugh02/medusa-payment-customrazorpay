@@ -128,7 +128,14 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     context: PaymentProcessorContext
   ): Promise<PaymentProcessorError | PaymentProcessorSessionResponse> {
     const intentRequestData = this.getPaymentIntentOptions();
-    const { email, currency_code, amount, resource_id, customer } = context;
+    const {
+      email,
+      currency_code,
+      amount,
+      resource_id,
+      customer,
+      billing_address,
+    } = context;
 
     const intentRequest: Orders.RazorpayOrderCreateRequestBody = {
       amount: Math.round(amount),
@@ -145,7 +152,13 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
       ...intentRequestData,
     };
 
-    if (!(customer?.billing_address?.phone || customer?.phone)) {
+    if (
+      !(
+        customer?.billing_address?.phone ||
+        customer?.phone ||
+        billing_address?.phone
+      )
+    ) {
       throw new MedusaError(
         MedusaError.Types.PAYMENT_AUTHORIZATION_ERROR,
         "Phone number not found in context",
@@ -161,7 +174,11 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
       try {
         razorpayCustomer = await this.razorpay_.customers.create({
           email,
-          contact: customer?.phone ?? customer?.billing_address?.phone ?? "",
+          contact:
+            customer?.phone ??
+            customer?.billing_address?.phone ??
+            billing_address?.phone ??
+            "",
           gstin: customer?.metadata?.gstin as string,
           fail_existing: 0,
           name: `${customer?.last_name} ${customer?.last_name}`,
