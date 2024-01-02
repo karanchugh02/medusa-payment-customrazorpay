@@ -365,10 +365,22 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
   async updatePayment(
     context: PaymentProcessorContext
   ): Promise<PaymentProcessorError | PaymentProcessorSessionResponse | void> {
-    console.log("=>>>>>>>>>>calling update payment");
+    console.log("=>>>>>>>>>>calling update payment", context);
 
     const { amount, customer, paymentSessionData, currency_code } = context;
     const razorpayId = customer?.metadata?.razorpay_id;
+
+    const id = paymentSessionData.id as string;
+    let razorpayData = await this.razorpay_.orders.fetch(id);
+    if (razorpayData) {
+      if (razorpayData.status == "attempted" || razorpayData.status == "paid") {
+        const error: PaymentProcessorError = {
+          error: "Unable to update paid or attempted order",
+          code: ErrorCodes.UNSUPPORTED_OPERATION,
+        };
+        return error;
+      }
+    }
 
     if (razorpayId !== (paymentSessionData?.customer as any)?.id) {
       const result = await this.initiatePayment(context);
