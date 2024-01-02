@@ -108,6 +108,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
     const id = paymentSessionData.id as string;
     const paymentIntent = await this.razorpay_.orders.fetch(id);
 
+    console.log("payment intent razorpay is ", paymentIntent);
     switch (paymentIntent.status) {
       // created' | 'authorized' | 'captured' | 'refunded' | 'failed'
       case "created":
@@ -143,6 +144,7 @@ abstract class RazorpayBase extends AbstractPaymentProcessor {
       " and customer is ",
       customer
     );
+
     const intentRequest: Orders.RazorpayOrderCreateRequestBody = {
       amount: Math.round(amount),
       currency: currency_code.toUpperCase(),
